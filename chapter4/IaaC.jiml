@@ -1,0 +1,48 @@
+{
+    "region": "us-east-1",
+    "resources": [
+        {
+            "type": "loadbalancer",
+            "id": "LB",
+            "config": {
+                "virtualmachines": 2,
+                "virtualmachine": {
+                    "cpu": 2,
+                    "ram": 4,
+                    "os": "ubuntu"
+                }
+            },
+            "waitFor": "$DB"
+        },
+        {
+            "type": "cdn",
+            "id": "CDN",
+            "config": {
+                "defaultSource": "$LB",
+                "sources": [{
+                    "path": "/static/*",
+                    "source": "$BUCKET"
+                }]
+            }
+        },
+        {
+            "type": "database",
+            "id": "DB",
+            "config": {
+                "password": "***",
+                "engine": "MySQL"
+            }
+        },
+        {
+            "type": "dns",
+            "config": {
+                "from": "www.sonsaya.com",
+                "to": "$CDN"
+            }
+        },
+        {
+            "type": "bucket",
+            "id": "BUCKET"
+        }
+    ]
+}
