@@ -1,0 +1,22 @@
+/* 
+** jiml (JSON Infrastructure Markup Language) is transpiled
+** into a dependency graph, which is traversed from
+** the lowest level, the most independent nodes, to the higher
+** ones by a pseudo language, which is then translated into AWS API calls
+*/
+
+$DB = database create { "password": "***", "engine": "MySQL" }
+$VM1 = virtualmachine create { "cpu": 2, "ram": 4, "os": "ubuntu" }
+$VM2 = virtualmachine create { "cpu": 2, "ram": 4, "os": "ubuntu" }
+$BUCKET = bucket create { }
+
+await [ $DB, $VM1, $VM2 ]
+$LB = loadbalancer create { "virtualmachines": [ $VM1, $VM2 ] }
+
+await [ $BUCKET, $LB ]
+$CDN = cdn create { "defaultSource": "$LB", "sources": [{ "path": "/static/*", "source": "$BUCKET" }] }
+
+await $CDN
+$DNS = dns create { "from": "www.sonsaya.com", "to": "$CDN" }
+
+await $DNS
