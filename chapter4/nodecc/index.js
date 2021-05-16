@@ -23,3 +23,17 @@ const content = blessed.box({
     tags: true
 });
 
+const progress = blessed.progressbar({
+    filled: 0,
+    parent: screen,
+    width: '70%',
+    height: '10%',
+    top: '0%',
+    left: '30%',
+    orientation: 'horizontal',
+    border: {
+        type: 'line',
+        fg: '#ffffff'
+    },
+    fg: 'white'
+});
