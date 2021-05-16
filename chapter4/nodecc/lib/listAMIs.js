@@ -8,7 +8,7 @@ module.exports = (cb) => {
     ec2.describeImages({
         Filters: [{
             Name: 'name',
-            Values: ['amzn2-ami-hvm-2.0.20210427.0-x86_64-gp2']
+            Values: ['amzn2-ami-hvm-2.0.*-x86_64-gp2']
         }]
     }, (err, data) => {
         if (err) {
