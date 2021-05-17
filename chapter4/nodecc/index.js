@@ -210,7 +210,7 @@ const open = (i) => {
                                 bg: 'blue',
                                 content: 'Terminating...'
                             });
-                            screen.append(vmContent);
+                            content.append(vmContent);
                         }
                         screen.render();
                     });
