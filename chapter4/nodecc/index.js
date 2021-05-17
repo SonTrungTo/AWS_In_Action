@@ -116,20 +116,150 @@ const open = (i) => {
             screen.render();
         });
     } else if (i === 1) {
-        
+        loading();
+        require('./lib/listAMIs')((err, result) => {
+            loaded();
+            if (err) {
+                log('error', ' list AMIs cb err ' + err);
+            } else {
+                const amiList = blessed.list({
+                    fg: 'white',
+                    bg: 'blue',
+                    selectedBg: 'green',
+                    mouse: true,
+                    keys: true,
+                    vi: true,
+                    items: result.descriptions
+                });
+                content.append(amiList);
+                amiList.focus();
+                amiList.on('select', (el, i) => {
+                    const amiId = result.amiIds[i];
+                    loading();
+                    require('./lib/listSubnets')((err, subnetIds) => {
+                        loaded();
+                        if (err) {
+                            log('error', ' listSubnets cb err: ' + err);
+                        } else {
+                            const subnetList = blessed.list({
+                                fg: 'white',
+                                bg: 'blue',
+                                selectedBg: 'green',
+                                mouse: true,
+                                keys: true,
+                                vi: true,
+                                items: subnetIds
+                            });
+                            content.append(subnetList);
+                            subnetList.focus();
+                            subnetList.on('select', (el, i) => {
+                                const subnetId = subnetIds[i];
+                                loading();
+                                require('./lib/createVM')(amiId, subnetId, (err) => {
+                                    loaded();
+                                    if (err) {
+                                        log('error', ' createVM cb error: ' + err);
+                                    } else {
+                                        const vmContent = blessed.box({
+                                            fg: 'white',
+                                            bg: 'blue',
+                                            content: 'Starting...'
+                                        });
+                                        content.append(vmContent);
+                                    }
+                                    screen.render();
+                                });
+                            });
+                            screen.render();
+                        }
+                        screen.render();
+                    });
+                });
+                screen.render();
+            }
+            screen.render();
+        });
     } else if (i === 2) {
-
+        loading();
+        require('./lib/listVMs')((err, instanceIds) => {
+            loaded();
+            if (err) {
+                log('error', ' listVMs cb error: ' + err);
+            } else {
+                const instanceList = blessed.list({
+                    fg: 'white',
+                    bg: 'blue',
+                    selectedBg: 'green',
+                    mouse: true,
+                    keys: true,
+                    vi: true,
+                    items: instanceIds
+                });
+                content.append(instanceList);
+                instanceList.focus();
+                instanceList.on('select', (el, i) => {
+                    const instanceId = instanceIds[i];
+                    loading();
+                    require('./lib/terminateVM')(instanceId, (err) => {
+                        loaded();
+                        if (err) {
+                            log('error', ' terminateVM cb error: ' + err);
+                        } else {
+                            const vmContent = blessed.box({
+                                fg: 'white',
+                                bg: 'blue',
+                                content: 'Terminating...'
+                            });
+                            screen.append(vmContent);
+                        }
+                        screen.render();
+                    });
+                });
+                screen.render();
+            }
+            screen.render();
+        });
+    } else {
+        log('error', 'not supported');
+        screen.render();
     }
 };
 
-const loading = () => {
+screen.key('left', () => {
+    content.border.type = 'none';
+    content.children.slice().forEach((child) => {
+        content.remove(child);
+    });
+    list.border.type='line';
+    list.focus();
+    screen.render();
+});
 
+screen.key(['escape', 'q', 'C-c'], () => {
+    return process.exit(0);
+});
+
+let loadingInterval;
+
+const loading = () => {
+    progress.reset();
+    clearInterval(loadingInterval);
+    loadingInterval = setInterval(() => {
+        if (progress.filled < 75) {
+            progress.progress(progress.filled + 5);
+        }
+        screen.render();
+    }, 200);
 };
 
 const loaded = () => {
-
+    clearInterval(loadingInterval);
+    progress.progress(100);
+    screen.render();
 };
 
-const log = () => {
-
+const log = (level, message) => {
+    screen.log('[' + level + ']: ' + message);
 };
+
+screen.render();
