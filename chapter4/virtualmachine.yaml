@@ -1,0 +1,25 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 4'
+Parameters:
+  KeyName:
+    Description: 'Key Pair Name'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: mykey
+  VPC:
+    Description: 'Just select the one and only default VPC'
+    Type: 'AWS::EC2::VPC::Id'
+  Subnet:
+    Description: 'Just select one of the available subnets'
+    Type: 'AWS::EC2::Subnet::Id'
+  InstanceType:
+    Description: 'Select one of the possible instance types'
+    Type: String
+    Default: 't2.micro'
+    AllowedValues: ['t2.micro', 't2.small', 't2.medium']
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: ''
+Outputs:
