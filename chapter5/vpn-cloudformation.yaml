@@ -1,0 +1,7 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 5 (OpenSwan acting as VPN IPSec endpoint)'
+Parameters:
+  KeyName:
+    Description: ''
+    Type: ''
