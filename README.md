@@ -8,3 +8,4 @@ everything in AWS.
 # Topics covered:
 ## Chapter 3: Virtual Machine (AWS EC2)
 ## Chapter 4: IaaC: CLI, SDK and CloudFormation
+## Chapter 5: AWS CloudFormation, OpsWorks and Elastic Beanstalk
