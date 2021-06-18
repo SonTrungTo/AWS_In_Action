@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-VpcId="$(aws ec2 describe-vpcs --output text --query "Vpcs[0].VpcId")"
+VpcId="$(aws ec2 describe-vpcs --query "Vpcs[0].VpcId" --output text)"
 
 aws cloudformation create-stack --stack-name irc \
     --template-url https://s3.amazonaws.com/awsinaction-code2/\
