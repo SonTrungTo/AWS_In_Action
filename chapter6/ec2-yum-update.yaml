@@ -1,0 +1,48 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS chapter 06: IAM role'
+Parameters:
+  KeyName:
+    Description: 'Key Pair Name'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: mykey
+  VPC:
+    Description: 'Pick one and default VPC'
+    Type: 'AWS::EC2::VPC::Id'
+  Subnet:
+    Description: 'Select one of the available subnets'
+    Type: 'AWS::EC2::Subnet::Id'
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'My security group'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+      Tags:
+        Key: Name
+        Value: 'AWS In Action chapter 6 IAM role'
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: 'ami-0aeeebd8d2ab47354'
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      SubnetId: !Ref Subnet
+      SecurityGroupIds:
+      - !Ref SecurityGroup
+      Tags:
+      - Key: Name
+        Value: 'AWS In Action experiencing with UserData auto-update after boot'
+      UserData:
+        'Fn::Base64': |
+          #!/bin/bash -x
+          yum -y update
+Outputs:
+  InstancePublicName:
+    Value: !Sub ${EC2Instance.PublicDnsName}
+    Description: 'Instance Public Name (connect via SSH as ec2-user)'
