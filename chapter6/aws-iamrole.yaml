@@ -1,2 +1,5 @@
 ---
-'AWSTemplateFormatVersion': '2010-09-09'
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS In Action chapter 06 IAM role'
+Parameters:
+  
