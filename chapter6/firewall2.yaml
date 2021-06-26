@@ -1,0 +1,53 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 06 (firewall 2)'
+Parameters:
+  KeyName:
+    Description: 'Key Pair name'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: mykey
+  VPC:
+    Description: 'Just select the one and only default VPC'
+    Type: 'AWS::EC2::VPC::Id'
+  Subnet:
+    Description: 'Just select one of the available subnets'
+    Type: 'AWS::EC2::Subnet::Id'
+  AmiId:
+    Description: 'ID of AMI on 26/06/2021'
+    Type: String
+    Default: 'ami-0ab4d1e9cf9a1215a'
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Learn how to protect your EC2 Instance.'
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: 'AWS in Action: chapter 06 (firewall 2)'
+      SecurityGroupIngress:
+      - CidrIp: '0.0.0.0/0'
+        IpProtocol: icmp
+        FromPort: -1
+        ToPort: -1
+  Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: !Ref AmiId
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: true
+        DeleteOnTermination: true
+        DeviceIndex: 0
+        GroupSet:
+        - !Ref SecurityGroup
+        SubnetId:
+        - !Ref Subnet
+      Tags:
+      - Key: Name
+        Value: 'AWS in Action: chapter 06 (firewall 2)'
+Outputs:
+  PublicName:
+    Value: !Sub ${Instance.PublicDnsName}
+    Description: 'Public name of EC2 Instance (connect via SSH as ec2-user)'
