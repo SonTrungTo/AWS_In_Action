@@ -1,5 +1,92 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'AWS In Action chapter 06 IAM role'
+Description: 'AWS In Action chapter 06 (IAM role)'
 Parameters:
-  
+  KeyName:
+    Description: 'Key Pair Name'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: mykey
+  VPC:
+    Description: 'Just select the one and only default VPC'
+    Type: 'AWS::EC2::VPC::Id'
+  Subnet:
+    Description: 'Just select one of the available subnets'
+    Type: 'AWS::EC2::Subnet::Id'
+  Lifetime:
+    Description: 'Lifetime in minutes (2-59)'
+    Type: Number
+    Default: '2'
+    MinValue: '2'
+    MaxValue: '59'
+  AMIId:
+    Description: 'The newest AMI image on 26/6/2021'
+    Type: String
+    Default: 'ami-0ab4d1e9cf9a1215a'
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'My security group'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - CidrIp: '0.0.0.0/0'
+        FromPort: 22
+        ToPort: 22
+        IpProtocol: tcp
+      Tags:
+      - Key: Name
+        Value: 'AWS in Action: chapter 06 (IAM Role)'
+  InstanceProfile:
+    Type: 'AWS::EC2::InstanceProfile'
+    Properties:
+      Roles:
+      - !Ref Role
+  Role:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - 'ec2.amazonaws.com'
+          Action:
+          - 'sts:AssumeRole'
+      Policies:
+      - PolicyName: ec2
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Stmt1425388787000
+            Effect: Allow
+            Action:
+            - 'ec2:StopInstances'
+            Resource:
+            - '*'
+            Condition:
+              StringEquals:
+                'ec2:ResourceTag/aws:cloudformation:stack-id': !Ref 'AWS::StackId'
+  Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      IamInstanceProfile: !Ref InstanceProfile
+      ImageId: !Ref AMIId
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+      - !Ref SecurityGroup
+      SubnetId: !Ref Subnet
+      UserData:
+        'Fn::Base64': !Sub |
+          #!/bin/bash -x
+          INSTANCEID="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+          echo "aws ec2 stop-instances --instance-ids $INSTANCEID --region ${AWS::Region}" \
+          | at now + ${Lifetime} minutes
+      Tags:
+      - Key: Name
+        Value: 'AWS in Action: chapter 6 (IAM role)'
+Outputs:
+  InstancePublicName:
+    Value: !Sub ${Instance.PublicDnsName}
+    Description: 'Public name (connect via SSH as user ec2-user)'
