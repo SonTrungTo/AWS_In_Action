@@ -1,0 +1,100 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 06 (Bastion Host)'
+Parameters:
+  KeyName:
+    Description: 'Key Pair name'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: mykey
+  VPC:
+    Description: 'Choose the one and only default VPC'
+    Type: 'AWS::EC2::VPC::Id'
+  Subnet:
+    Description: 'Choose one of the available subnets'
+    Type: 'AWS::EC2::Subnet::Id'
+  PublicIp:
+    Description: 'Enter your Public IP address to connect via SSH'
+    Type: String
+    AllowedPattern: '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'
+    ConstraintDescription: 'Enter a valid IPv4 address'
+Resources:
+  SecurityGroupBastionHost:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'This is security group for the bastion host'
+      VpcId: !Ref ${VPC}
+      Tags:
+      - Key: Name
+        Value: 'Bastion Host'
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: !Sub '${PublicIp}/32'
+      - IpProtocol: icmp
+        FromPort: '-1'
+        ToPort: '-1'
+        CidrIp: '0.0.0.0/0'
+  SecurityGroupInstance:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'This is security group for instances separated by the bastion host'
+      VpcId: !Ref ${VPC}
+      Tags:
+      - Key: Name
+        Value: 'Instance'
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: !Ref SecurityGroupBastionHost
+  BastionHost:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceId: 'ami-0ab4d1e9cf9a1215a'
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      Tags:
+      - Key: Name
+        Value: 'Bastion Host'
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: true
+        DeleteOnTermination: true
+        DeviceIndex: 0
+        GroupSet:
+        - !Ref SecurityGroupBastionHost
+        SubnetId: !Ref Subnet
+  Instance1:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceId: 'ami-0ab4d1e9cf9a1215a'
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      Tags:
+      - Key: Name
+        Value: 'Instance 1'
+      SecurityGroupIds:
+      - !Ref SecurityGroupInstance
+      SubnetId: !Ref Subnet
+  Instance2:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceId: 'ami-0ab4d1e9cf9a1215a'
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      Tags:
+      - Key: Name
+        Value: 'Instance 2'
+      SecurityGroupIds:
+      - !Ref SecurityGroupInstance
+      SubnetId: !Ref Subnet
+Outputs:
+  BastionHostPublicName:
+    Value: !Sub ${BastionHost.PublicDnsName}
+    Description: 'Bastion host public name (connect via SSH as user ec2-user)'
+  Instance1PublicName:
+    Value: !Sub ${Instance1.PublicDnsName}
+    Description: 'Instance 1 public name'
+  Instance2PublicName:
+    Value: !Sub ${Instance2.PublicDnsName}
+    Description: 'Instance 2 public name'
