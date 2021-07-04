@@ -1,7 +1,10 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'AWS in Action: chapter 6 (VPC)'
+Description: 'AWS in Action: chapter 06 (VPC)'
 Parameters:
   KeyPair:
-    Description: ''
-    Type: ''
+    Description: 'Key pair for VPC'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: mykey
+Resources:
+  
