@@ -7,4 +7,46 @@ Parameters:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Default: mykey
 Resources:
-  
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: '10.0.0.0/16'
+      EnableDnsHostnames: 'true'
+      Tags:
+      - Key: Name
+        Value: 'AWS in Action: chapter 06 (VPC)'
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties: {}
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  SubnetPublicBastionHost:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: 'us-east-1a'
+      CidrBlock: '10.0.1.0/24'
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: 'Public Bastion Host'
+  RouteTablePublicBastionHost:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+  RouteTableAssociationPublicBastionHost:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SubnetPublicBastionHost
+      RouteTableId: !Ref RouteTablePublicBastionHost
+  RoutePublicBastionHostToInternet:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref RouteTablePublicBastionHost
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+    DependsOn: !Ref VPCGatewayAttachment
+  NetworkAclPublicBastionHost:
+    Type: 'AWS::EC2::NetworkAcl'
