@@ -10,3 +10,4 @@ everything in AWS.
 ## Chapter 4: IaaC: CLI, SDK and CloudFormation
 ## Chapter 5: AWS CloudFormation, OpsWorks and Elastic Beanstalk
 ## Chapter 6: AWS IAM, GroupSecurity and VPC
+## Chapter 7: AWS Lambda
