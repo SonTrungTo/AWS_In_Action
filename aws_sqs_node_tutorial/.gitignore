@@ -1,2 +1,6 @@
 ## Unnecessary modules
 node_modules/
+dist/
+
+## ENV variables
+.env
