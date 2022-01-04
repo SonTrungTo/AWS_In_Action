@@ -48,6 +48,20 @@ const sendParams: SQS.SendMessageRequest = {
     MessageBody: JSON.stringify(messageJSON),
     QueueUrl: "",
 };
+const receiveParams: SQS.ReceiveMessageRequest = {
+    AttributeNames: [
+        "Title",
+        "Author",
+        "Episode",
+    ],
+    MessageAttributeNames: [
+        "All"
+    ],
+    MaxNumberOfMessages: 10,
+    QueueUrl: '',
+    VisibilityTimeout: 20,
+    WaitTimeSeconds: 20,
+};
 
 (async () => {
    const createQueue = await new Promise((resolve, reject) => {
@@ -93,6 +107,17 @@ const sendParams: SQS.SendMessageRequest = {
     });
    });
    console.log(messageId);
+
+   const receiveMessage = await new Promise((resolve, reject) => {
+    sqs.receiveMessage({...receiveParams, QueueUrl: String(getQueueUrl)}, (err: AWSError, data: SQS.ReceiveMessageResult) => {
+        if (err) {
+            reject(err);
+        } else {
+            resolve(data.Messages);
+        }
+    });
+   });
+   console.log(receiveMessage);
 
    const deleteQueue = await new Promise((resolve, reject) => {
     sqs.deleteQueue({ QueueUrl: String(getQueueUrl) }, (err: AWSError, data) => {
